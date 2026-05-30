@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<link rel="icon" type="image/png" href="../src/assets/favicon/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="../src/assets/favicon/favicon.svg" />
+<link rel="shortcut icon" href="../src/assets/favicon/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="../src/assets/favicon/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="MyWebSite" />
+<link rel="manifest" href="../src/assets/favicon/site.webmanifest" />
+
+<title>FinDash — Controle de Gastos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-base:    #0C0E14; --bg-card:   #13161F; --bg-card2:  #191C28;
+    --bg-hover:   #1F2233; --border:    rgba(255,255,255,0.07); --border-hi: rgba(255,255,255,0.14);
+    --gold:       #F5A623; --gold-dim:  rgba(245,166,35,0.12);  --gold-glow: rgba(245,166,35,0.25);
+    --violet:     #7B6EF6; --violet-dim:rgba(123,110,246,0.12);
+    --mint:       #1ED8A0; --mint-dim:  rgba(30,216,160,0.12);
+    --red:        #F96060; --red-dim:   rgba(249,96,96,0.12);
+    --text-hi:    #EDF0FA; --text-md:   #8A90AB; --text-lo:  #555A70;
+    --sidebar-w:  68px;    --radius:    14px;    --radius-sm: 8px;
+  }
+  body { font-family:'Outfit',sans-serif; background:var(--bg-base); color:var(--text-hi); display:flex; min-height:100vh; overflow-x:hidden; }
+
+  /* SIDEBAR */
+  .sidebar { width:var(--sidebar-w); background:var(--bg-card); border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; padding:24px 0; position:fixed; top:0;left:0;bottom:0; z-index:100; gap:6px; }
+  .sidebar-logo { width:40px;height:40px; background:var(--gold); border-radius:10px; display:flex;align-items:center;justify-content:center; font-weight:700;font-size:18px; color:#0C0E14; margin-bottom:20px; }
+  .sidebar-sep { width:32px;height:1px; background:var(--border); margin:8px 0; }
+  .nav-btn { width:42px;height:42px; border-radius:var(--radius-sm); display:flex;align-items:center;justify-content:center; cursor:pointer; transition:background .15s; border:none; background:transparent; color:var(--text-md); font-size:18px; }
+  .nav-btn:hover { background:var(--bg-hover); color:var(--text-hi); }
+  .nav-btn.active { background:var(--gold-dim); color:var(--gold); }
+  .nav-btn svg { width:20px;height:20px; stroke-width:1.7;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round; }
+  .sidebar-bottom { margin-top:auto; display:flex;flex-direction:column;align-items:center;gap:6px; }
+  .avatar { width:34px;height:34px;border-radius:50%; background:var(--violet-dim); border:1.5px solid var(--violet); display:flex;align-items:center;justify-content:center; font-size:13px;font-weight:600;color:var(--violet); cursor:pointer; }
+
+  /* MAIN */
+  .main { margin-left:var(--sidebar-w); flex:1; display:flex;flex-direction:column; min-height:100vh; }
+  .topbar { height:64px; display:flex;align-items:center;justify-content:space-between; padding:0 28px; border-bottom:1px solid var(--border); background:var(--bg-card); position:sticky;top:0;z-index:50; }
+  .topbar-title { font-size:17px;font-weight:600;letter-spacing:-.2px; }
+  .topbar-title span { color:var(--gold); }
+  .topbar-right { display:flex;align-items:center;gap:12px; }
+  .badge-date { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-md); background:var(--bg-card2); border:1px solid var(--border); padding:5px 12px; border-radius:100px; }
+
+  /* API STATUS BADGE */
+  .api-status { display:flex;align-items:center;gap:7px; font-size:12px; padding:5px 12px; border-radius:100px; border:1px solid var(--border); background:var(--bg-card2); font-family:'JetBrains Mono',monospace; transition:all .3s; }
+  .api-dot { width:7px;height:7px;border-radius:50%;flex-shrink:0; }
+  .api-status.ok   { border-color:rgba(30,216,160,.3); color:var(--mint); }
+  .api-status.ok   .api-dot { background:var(--mint); box-shadow:0 0 5px var(--mint); }
+  .api-status.err  { border-color:rgba(249,96,96,.3);  color:var(--red); }
+  .api-status.err  .api-dot { background:var(--red); }
+  .api-status.wait { color:var(--text-md); }
+  .api-status.wait .api-dot { background:var(--text-lo); animation:pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .topbar-btn { height:34px;padding:0 14px; background:var(--gold); color:#0C0E14; border:none;border-radius:var(--radius-sm); font-family:'Outfit',sans-serif; font-size:13px;font-weight:600; cursor:pointer; display:flex;align-items:center;gap:6px; transition:opacity .15s; }
+  .topbar-btn:hover { opacity:.88; }
+  .content { padding:28px; display:flex;flex-direction:column;gap:24px; }
+
+  /* STAT CARDS */
+  .stats-row { display:grid;grid-template-columns:repeat(4,1fr);gap:14px; }
+  .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; position:relative;overflow:hidden; transition:border-color .2s; }
+  .stat-card:hover { border-color:var(--border-hi); }
+  .stat-card::before { content:''; position:absolute;top:0;left:0;right:0;height:2px; }
+  .stat-card.c-gold::before { background:var(--gold); } .stat-card.c-violet::before { background:var(--violet); }
+  .stat-card.c-mint::before { background:var(--mint); } .stat-card.c-red::before   { background:var(--red); }
+  .stat-label { font-size:12px;font-weight:500;color:var(--text-md);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px; }
+  .stat-value { font-family:'JetBrains Mono',monospace; font-size:24px;font-weight:500; color:var(--text-hi); letter-spacing:-1px; }
+  .stat-sub   { font-size:12px;color:var(--text-md);margin-top:6px; }
+  .stat-sub b { color:var(--mint); }
+  .stat-icon  { position:absolute;right:16px;top:18px; width:36px;height:36px; border-radius:var(--radius-sm); display:flex;align-items:center;justify-content:center; }
+  .stat-icon.c-gold   { background:var(--gold-dim);   color:var(--gold); }
+  .stat-icon.c-violet { background:var(--violet-dim); color:var(--violet); }
+  .stat-icon.c-mint   { background:var(--mint-dim);   color:var(--mint); }
+  .stat-icon.c-red    { background:var(--red-dim);    color:var(--red); }
+  .stat-icon svg { width:18px;height:18px;stroke-width:1.8;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round; }
+
+  /* PANEL */
+  .mid-row { display:grid;grid-template-columns:1fr 1.45fr;gap:20px; }
+  .panel { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden; }
+  .panel-header { display:flex;align-items:center;justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--border); }
+  .panel-title { font-size:14px;font-weight:600;color:var(--text-hi);letter-spacing:-.2px; }
+  .panel-tag { font-size:11px;font-weight:500; background:var(--violet-dim);color:var(--violet); padding:3px 10px;border-radius:100px;border:1px solid rgba(123,110,246,.2); }
+  .panel-body { padding:20px; }
+
+  /* CHART */
+  .chart-wrap { position:relative;width:100%;height:220px; }
+  .donut-center { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%); text-align:center;pointer-events:none; }
+  .donut-center-val { font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:500;color:var(--text-hi); }
+  .donut-center-lbl { font-size:11px;color:var(--text-md);margin-top:2px; }
+  .legend { display:flex;flex-direction:column;gap:10px;margin-top:18px; }
+  .legend-item { display:flex;align-items:center;justify-content:space-between; }
+  .legend-left { display:flex;align-items:center;gap:10px; }
+  .legend-dot  { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+  .legend-name { font-size:13px;color:var(--text-md); }
+  .legend-right { display:flex;align-items:center;gap:12px; }
+  .legend-pct  { font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--text-hi); }
+  .legend-bar-wrap { width:80px;height:4px;background:var(--bg-card2);border-radius:4px; }
+  .legend-bar { height:100%;border-radius:4px; }
+
+  /* EXPENSE LIST */
+  .expenses-list { display:flex;flex-direction:column; }
+  .expense-item { display:flex;align-items:center;padding:13px 20px;border-bottom:1px solid var(--border);gap:14px; transition:background .15s;cursor:pointer; }
+  .expense-item:last-child { border-bottom:none; }
+  .expense-item:hover { background:var(--bg-hover); }
+  .exp-icon { width:38px;height:38px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0; }
+  .exp-info { flex:1;min-width:0; }
+  .exp-name { font-size:14px;font-weight:500;color:var(--text-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .exp-meta { font-size:12px;color:var(--text-md);margin-top:2px; }
+  .exp-dept { display:inline-block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:2px 7px;border-radius:100px;margin-left:6px; }
+  .exp-amount { font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:500;text-align:right;flex-shrink:0; }
+  .exp-date { font-size:11px;color:var(--text-md);margin-top:2px;text-align:right; }
+  .btn-del { background:transparent;border:none;cursor:pointer;color:var(--text-lo);font-size:14px;padding:4px;border-radius:4px;transition:color .15s; flex-shrink:0; }
+  .btn-del:hover { color:var(--red); }
+
+  /* BOTTOM ROW */
+  .bot-row { display:grid;grid-template-columns:1fr 1fr;gap:20px; }
+
+  /* FORM */
+  .form-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px; }
+  .form-group { display:flex;flex-direction:column;gap:6px; }
+  .form-group.full { grid-column:1/-1; }
+  label.form-label { font-size:12px;font-weight:500;color:var(--text-md);text-transform:uppercase;letter-spacing:.5px; }
+  .form-input,.form-select { background:var(--bg-card2);border:1px solid var(--border-hi);border-radius:var(--radius-sm);padding:10px 14px;font-family:'Outfit',sans-serif;font-size:14px;color:var(--text-hi);outline:none;transition:border-color .15s,box-shadow .15s;width:100%;appearance:none; }
+  .form-input::placeholder { color:var(--text-lo); }
+  .form-input:focus,.form-select:focus { border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow); }
+  .form-select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A90AB' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;cursor:pointer; }
+  .form-select option { background:#191C28; }
+  .btn-submit { width:100%;height:44px; background:var(--gold);color:#0C0E14; border:none;border-radius:var(--radius-sm); font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:4px; }
+  .btn-submit:disabled { opacity:.45;cursor:not-allowed; }
+  .btn-submit:not(:disabled):hover { opacity:.88; }
+  .btn-submit:active { transform:scale(.98); }
+
+  /* DEPT RANKING */
+  .dept-list { display:flex;flex-direction:column;gap:12px;padding:20px; }
+  .dept-item { display:flex;flex-direction:column;gap:6px; }
+  .dept-row  { display:flex;justify-content:space-between;align-items:center; }
+  .dept-name { font-size:13px;font-weight:500;color:var(--text-hi); }
+  .dept-val  { font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-md); }
+  .dept-track { height:6px;background:var(--bg-card2);border-radius:4px;overflow:hidden; }
+  .dept-fill  { height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1); }
+
+  /* SKELETON */
+  .skeleton { border-radius:6px;background:linear-gradient(90deg,var(--bg-card2) 25%,var(--bg-hover) 50%,var(--bg-card2) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .skel-line { height:14px;width:100%;margin-bottom:10px; }
+  .skel-val  { height:28px;width:60%; }
+
+  /* TOAST */
+  .toast { position:fixed;bottom:28px;right:28px; background:var(--bg-card2);border:1px solid var(--mint);border-radius:var(--radius);padding:14px 20px; font-size:14px;color:var(--text-hi); display:flex;align-items:center;gap:10px; opacity:0;transform:translateY(8px); transition:opacity .3s,transform .3s; pointer-events:none;z-index:999; }
+  .toast.show { opacity:1;transform:translateY(0); }
+  .toast.error { border-color:var(--red); }
+  .toast-dot { width:8px;height:8px;border-radius:50%;background:var(--mint);flex-shrink:0; }
+  .toast.error .toast-dot { background:var(--red); }
+  .empty { text-align:center;padding:40px 20px;color:var(--text-md);font-size:13px; }
+
+  /* ERROR BANNER */
+  .err-banner { background:var(--red-dim);border:1px solid rgba(249,96,96,.25);border-radius:var(--radius-sm);padding:12px 16px;font-size:13px;color:var(--red);display:flex;align-items:center;gap:10px;margin-bottom:0; }
+  .err-banner button { background:transparent;border:1px solid rgba(249,96,96,.4);color:var(--red);border-radius:var(--radius-sm);padding:4px 10px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif; }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">F</div>
+  <button class="nav-btn active" title="Dashboard">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+  </button>
+  <div class="sidebar-bottom"><div class="avatar">JD</div></div>
+</nav>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">Debtor <span>Dashboard</span></div>
+    <div class="topbar-right">
+      <span class="badge-date" id="current-date"></span>
+      <div class="api-status wait" id="api-status">
+        <span class="api-dot"></span><span id="api-status-txt">Conectando…</span>
+      </div>
+      <button class="topbar-btn" onclick="scrollToForm()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo Gasto
+      </button>
+    </div>
+  </header>
+
+  <div class="content">
+    <div id="error-banner"></div>
+
+    <div class="stats-row">
+      <div class="stat-card c-gold">
+        <div class="stat-label">Total Gastos</div>
+        <div class="stat-value" id="stat-total"><span class="skeleton skel-val"></span></div>
+        <div class="stat-sub" id="stat-total-sub">&nbsp;</div>
+        <div class="stat-icon c-gold"><svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      </div>
+      <div class="stat-card c-violet">
+        <div class="stat-label">Departamentos</div>
+        <div class="stat-value" id="stat-depts"><span class="skeleton skel-val" style="width:40%"></span></div>
+        <div class="stat-sub">centros de custo ativos</div>
+        <div class="stat-icon c-violet"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      </div>
+      <div class="stat-card c-mint">
+        <div class="stat-label">Lançamentos</div>
+        <div class="stat-value" id="stat-count"><span class="skeleton skel-val" style="width:35%"></span></div>
+        <div class="stat-sub">registros no período</div>
+        <div class="stat-icon c-mint"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      </div>
+      <div class="stat-card c-red">
+        <div class="stat-label">Maior Gasto</div>
+        <div class="stat-value" id="stat-max"><span class="skeleton skel-val"></span></div>
+        <div class="stat-sub" id="stat-max-dept">&nbsp;</div>
+        <div class="stat-icon c-red"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+      </div>
+    </div>
+
+    <div class="mid-row">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Divisão por Departamento</span>
+          <span class="panel-tag">Período atual</span>
+        </div>
+        <div class="panel-body">
+          <div class="chart-wrap">
+            <canvas id="donutChart" role="img" aria-label="Gráfico de rosca mostrando divisão de gastos por departamento">Distribuição de gastos por departamento.</canvas>
+            <div class="donut-center">
+              <div class="donut-center-val" id="donut-total">—</div>
+              <div class="donut-center-lbl">total</div>
+            </div>
+          </div>
+          <div class="legend" id="legend"><div class="skeleton skel-line"></div><div class="skeleton skel-line"></div><div class="skeleton skel-line" style="width:70%"></div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Últimos Gastos Adicionados</span>
+          <span class="panel-tag" id="recent-count-badge">carregando…</span>
+        </div>
+        <div class="expenses-list" id="expense-list">
+          <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+            <div class="skeleton skel-line"></div><div class="skeleton skel-line"></div><div class="skeleton skel-line" style="width:80%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bot-row">
+      <div class="panel" id="form-section">
+        <div class="panel-header">
+          <span class="panel-title">Adicionar Novo Gasto</span>
+        </div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Descrição</label>
+              <input type="text" class="form-input" id="f-desc" placeholder="Ex.: Campanha Google Ads"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Valor (R$)</label>
+              <input type="number" class="form-input" id="f-valor" placeholder="0,00" min="0" step="0.01"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Departamento</label>
+              <select class="form-select" id="f-dept">
+                <option value="">Selecionar…</option>
+                <option value="Vendas">Vendas</option>
+                <option value="Financas">Finanças</option>
+                <option value="Marketing">Marketing</option>
+                <option value="RH">RH</option>
+                <option value="TI">TI</option>
+                <option value="Operacoes">Operações</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Data</label>
+              <input type="date" class="form-input" id="f-data"/>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Categoria</label>
+              <select class="form-select" id="f-cat">
+                <option value="">Selecionar…</option>
+                <option value="Infraestrutura">Infraestrutura</option>
+                <option value="Software">Software / Licença</option>
+                <option value="Pessoal">Pessoal</option>
+                <option value="Marketing">Marketing / Publicidade</option>
+                <option value="Viagem">Viagem</option>
+                <option value="Fornecedor">Fornecedor</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <button class="btn-submit" id="btn-submit" onclick="handleSubmit()">Registrar Gasto</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Ranking de Departamentos</span>
+          <span class="panel-tag">por volume</span>
+        </div>
+        <div class="dept-list" id="dept-ranking">
+          <div class="skeleton skel-line"></div><div class="skeleton skel-line"></div><div class="skeleton skel-line" style="width:65%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span class="toast-dot"></span>
+  <span id="toast-msg">OK</span>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  CONFIGURAÇÃO  —  altere apenas esta seção
+// ══════════════════════════════════════════════════════
+const API_BASE = 'http://localhost:8080/api';
+
+// Mapeamento dos campos retornados pela API → campos internos
+// Ajuste conforme os nomes que o seu backend retorna
+const MAP = {
+  id:            e => e.id,
+  descricao:     e => e.descricao   ?? e.description ?? e.nome,
+  valor:         e => Number(e.valor ?? e.value ?? e.amount ?? 0),
+  departamento:  e => e.departamento ?? e.department ?? e.setor,
+  categoria:     e => e.categoria    ?? e.category   ?? '',
+  data:          e => e.data         ?? e.date        ?? e.createdAt ?? '',
+};
+
+// ══════════════════════════════════════════════════════
+//  CAMADA DE API
+// ══════════════════════════════════════════════════════
+async function apiFetch(path, options = {}) {
+  const res = await fetch(API_BASE + path, {
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    ...options,
+  });
+  if (!res.ok) {
+    const msg = await res.text().catch(() => `HTTP ${res.status}`);
+    throw new Error(`${res.status}: ${msg}`);
+  }
+  return res.json();
+}
+
+const Api = {
+  // GET /api/gastos  →  array de gastos
+  listar() { return apiFetch('/gastos'); },
+
+  // POST /api/gastos  →  gasto criado
+  criar(payload) {
+    return apiFetch('/gastos', { method: 'POST', body: JSON.stringify(payload) });
+  },
+
+  // DELETE /api/gastos/{id}
+  excluir(id) {
+    return apiFetch(`/gastos/${id}`, { method: 'DELETE' });
+  },
+};
+
+// Normaliza qualquer formato de objeto recebido da API
+function normalizar(raw) {
+  return {
+    id:           MAP.id(raw),
+    descricao:    MAP.descricao(raw)    || '—',
+    valor:        MAP.valor(raw),
+    departamento: MAP.departamento(raw) || 'Outros',
+    categoria:    MAP.categoria(raw)    || '—',
+    data:         MAP.data(raw)         || '',
+  };
+}
+
+// ══════════════════════════════════════════════════════
+//  ESTADO LOCAL
+// ══════════════════════════════════════════════════════
+let expenses  = [];
+let donutChart = null;
+
+const COLORS = {
+  Vendas:'#7B6EF6', Financas:'#F5A623', Marketing:'#1ED8A0',
+  RH:'#F96060', TI:'#60C3F9', Operacoes:'#C9A4FF',
+};
+const ICONS = { Vendas:'💼', Financas:'📊', Marketing:'📣', RH:'👥', TI:'💻', Operacoes:'⚙️' };
+const DEFAULT_COLOR = '#8A90AB';
+
+function deptColor(d) { return COLORS[d] || DEFAULT_COLOR; }
+function fmtBRL(v)    { return 'R$ ' + Number(v).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function fmtDate(d)   { if(!d) return '—'; try { const [y,m,dd]=d.split('T')[0].split('-'); return `${dd}/${m}/${y}`; } catch{ return d; } }
+
+// ══════════════════════════════════════════════════════
+//  STATUS DA CONEXÃO
+// ══════════════════════════════════════════════════════
+function setApiStatus(state) {
+  const el  = document.getElementById('api-status');
+  const txt = document.getElementById('api-status-txt');
+  el.className = 'api-status ' + state;
+  txt.textContent = state === 'ok' ? 'API online' : state === 'err' ? 'API offline' : 'Conectando…';
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDERIZAÇÃO
+// ══════════════════════════════════════════════════════
+function getDeptTotals() {
+  return expenses.reduce((acc,e) => { acc[e.departamento] = (acc[e.departamento]||0) + e.valor; return acc; }, {});
+}
+
+function renderStats() {
+  const total = expenses.reduce((s,e) => s + e.valor, 0);
+  const depts = Object.keys(getDeptTotals()).length;
+  const maxE  = expenses.length ? expenses.reduce((a,b) => a.valor > b.valor ? a : b) : null;
+  document.getElementById('stat-total').textContent = fmtBRL(total);
+  document.getElementById('stat-total-sub').innerHTML = `<b>${expenses.length} lançamentos</b> este mês`;
+  document.getElementById('stat-depts').textContent   = depts;
+  document.getElementById('stat-count').textContent   = expenses.length;
+  document.getElementById('stat-max').textContent     = maxE ? fmtBRL(maxE.valor) : 'R$ 0';
+  document.getElementById('stat-max-dept').textContent = maxE ? maxE.departamento : '—';
+  document.getElementById('donut-total').textContent  = fmtBRL(total);
+}
+
+function renderChart() {
+  const map    = getDeptTotals();
+  const labels = Object.keys(map);
+  const data   = Object.values(map);
+  const colors = labels.map(deptColor);
+
+  if (donutChart) {
+    donutChart.data.labels = labels;
+    donutChart.data.datasets[0].data   = data;
+    donutChart.data.datasets[0].backgroundColor = colors;
+    donutChart.update();
+  } else {
+    donutChart = new Chart(document.getElementById('donutChart'), {
+      type: 'doughnut',
+      data: { labels, datasets:[{ data, backgroundColor:colors, borderWidth:2, borderColor:'#13161F', hoverBorderColor:'#13161F' }] },
+      options: { responsive:true, maintainAspectRatio:false, cutout:'68%',
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ` ${ctx.label}: ${fmtBRL(ctx.raw)}` } } }
+      }
+    });
+  }
+
+  const total = data.reduce((a,b) => a+b, 0);
+  document.getElementById('legend').innerHTML = labels.map((l,i) => {
+    const pct = total ? Math.round(data[i]/total*100) : 0;
+    return `<div class="legend-item">
+      <div class="legend-left"><span class="legend-dot" style="background:${colors[i]}"></span><span class="legend-name">${l}</span></div>
+      <div class="legend-right">
+        <div class="legend-bar-wrap"><div class="legend-bar" style="width:${pct}%;background:${colors[i]}"></div></div>
+        <span class="legend-pct">${pct}%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderList() {
+  const badge = document.getElementById('recent-count-badge');
+  const el    = document.getElementById('expense-list');
+  badge.textContent = `${expenses.length} registros`;
+  if (!expenses.length) {
+    el.innerHTML = '<div class="empty">Nenhum gasto encontrado.<br>Adicione um abaixo ↓</div>';
+    return;
+  }
+  const sorted = [...expenses].sort((a,b) => (b.id||0)-(a.id||0)).slice(0,8);
+  el.innerHTML = sorted.map(e => {
+    const c = deptColor(e.departamento);
+    return `<div class="expense-item">
+      <div class="exp-icon" style="background:${c}22">${ICONS[e.departamento]||'📁'}</div>
+      <div class="exp-info">
+        <div class="exp-name">${e.descricao}</div>
+        <div class="exp-meta">${e.categoria}<span class="exp-dept" style="background:${c}22;color:${c}">${e.departamento}</span></div>
+      </div>
+      <div>
+        <div class="exp-amount" style="color:${c}">${fmtBRL(e.valor)}</div>
+        <div class="exp-date">${fmtDate(e.data)}</div>
+      </div>
+      <button class="btn-del" title="Excluir" onclick="handleDelete(${e.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function renderRanking() {
+  const map    = getDeptTotals();
+  const ranked = Object.entries(map).sort((a,b) => b[1]-a[1]);
+  const max    = ranked[0]?.[1] || 1;
+  const el     = document.getElementById('dept-ranking');
+  if (!ranked.length) { el.innerHTML = '<div class="empty">Sem dados disponíveis.</div>'; return; }
+  el.innerHTML = ranked.map(([dept,val]) => {
+    const pct = Math.round(val/max*100);
+    const c   = deptColor(dept);
+    return `<div class="dept-item">
+      <div class="dept-row">
+        <span class="dept-name">${ICONS[dept]||'📁'} ${dept}</span>
+        <span class="dept-val">${fmtBRL(val)}</span>
+      </div>
+      <div class="dept-track"><div class="dept-fill" style="width:${pct}%;background:${c}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderAll() { renderStats(); renderChart(); renderList(); renderRanking(); }
+
+// ══════════════════════════════════════════════════════
+//  OPERAÇÕES CRUD
+// ══════════════════════════════════════════════════════
+async function loadExpenses() {
+  setApiStatus('wait');
+  hideError();
+  try {
+    const raw  = await Api.listar();
+    // aceita array direto ou { content: [...] } (Page do Spring)
+    const list = Array.isArray(raw) ? raw : (raw.content ?? raw.data ?? []);
+    expenses   = list.map(normalizar);
+    setApiStatus('ok');
+    renderAll();
+  } catch (err) {
+    setApiStatus('err');
+    showError(`Falha ao carregar dados: ${err.message}`, loadExpenses);
+  }
+}
+
+async function handleSubmit() {
+  const desc  = document.getElementById('f-desc').value.trim();
+  const valor = parseFloat(document.getElementById('f-valor').value);
+  const dept  = document.getElementById('f-dept').value;
+  const cat   = document.getElementById('f-cat').value;
+  const data  = document.getElementById('f-data').value;
+
+  if (!desc || isNaN(valor) || valor <= 0 || !dept) {
+    showToast('⚠️  Preencha descrição, valor e departamento.', true);
+    return;
+  }
+
+  // Payload no formato que o backend espera
+  // Ajuste os nomes dos campos conforme a entidade Java
+  const payload = { descricao: desc, valor, departamento: dept, categoria: cat, data };
+
+  setBtnLoading(true);
+  try {
+    const saved = await Api.criar(payload);
+    expenses.push(normalizar(saved));
+    renderAll();
+    showToast('Gasto registrado com sucesso!');
+    resetForm();
+  } catch (err) {
+    showToast(`Erro ao salvar: ${err.message}`, true);
+  } finally {
+    setBtnLoading(false);
+  }
+}
+
+async function handleDelete(id) {
+  if (!id) return;
+  try {
+    await Api.excluir(id);
+    expenses = expenses.filter(e => e.id !== id);
+    renderAll();
+    showToast('Gasto removido.');
+  } catch (err) {
+    showToast(`Erro ao excluir: ${err.message}`, true);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  HELPERS DE UI
+// ══════════════════════════════════════════════════════
+function showToast(msg, isErr=false) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = 'toast show' + (isErr ? ' error' : '');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function showError(msg, retryFn) {
+  document.getElementById('error-banner').innerHTML =
+    `<div class="err-banner">⚠️ ${msg} <button onclick="(${retryFn.toString()})()">Tentar novamente</button></div>`;
+}
+function hideError() { document.getElementById('error-banner').innerHTML = ''; }
+
+function setBtnLoading(loading) {
+  const btn = document.getElementById('btn-submit');
+  btn.disabled   = loading;
+  btn.textContent = loading ? 'Registrando…' : 'Registrar Gasto';
+}
+
+function resetForm() {
+  ['f-desc','f-valor','f-dept','f-cat'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-data').value = new Date().toISOString().split('T')[0];
+}
+
+function scrollToForm() {
+  document.getElementById('form-section').scrollIntoView({ behavior:'smooth', block:'center' });
+  setTimeout(() => document.getElementById('f-desc').focus(), 400);
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+document.getElementById('current-date').textContent =
+  new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+document.getElementById('f-data').value = new Date().toISOString().split('T')[0];
+
+loadExpenses();
+</script>
+</body>
+</html>

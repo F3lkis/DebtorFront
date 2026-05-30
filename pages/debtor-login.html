@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link rel="icon" type="image/png" href="../src/assets/favicon/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="../src/assets/favicon/favicon.svg" />
+<link rel="shortcut icon" href="../src/assets/favicon/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="../src/assets/favicon/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="MyWebSite" />
+<link rel="manifest" href="../src/assets/favicon/site.webmanifest" />
+
+<script src="../src/js/debtor-login.js"></script>
+
+<title>DebtorHub — Acesso</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../src/css/debtor-login.css" />
+</head>
+<body>
+
+<!-- ═══ MOBILE BLOCKER ═══ -->
+<div id="screen-block">
+  <div class="block-icon">
+    <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12" y2="18.5"/></svg>
+  </div>
+  <h2>Tela muito pequena</h2>
+  <p>O DebtorHub foi projetado para uso em desktop. Acesse por um computador com resolução mínima de 1024px.</p>
+  <div class="block-badge">Mínimo: 1024px de largura</div>
+</div>
+
+<!-- ═══ LEFT PANEL ═══ -->
+<div class="panel-left">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 20 20" fill="none" stroke="#0D0D0D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="10" cy="10" r="8"/>
+        <path d="M10 6v4l3 2"/>
+      </svg>
+    </div>
+    <span class="brand-name">DebtorHub</span>
+  </div>
+
+  <div class="panel-left-content">
+    <h2>Gestão de <span>débitos</span> em tempo real.</h2>
+    <p>Monitore cobranças, acompanhe inadimplências e tome decisões baseadas em dados com total segurança.</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-value">100%</div><div class="stat-label">Disponibilidade</div></div>
+      <div class="stat-card"><div class="stat-value">Facilidade</div><div class="stat-label">Para os usuários</div></div>
+      <div class="stat-card"><div class="stat-value">Débitos</div><div class="stat-label">Gerenciados</div></div>
+    </div>
+  </div>
+
+  <p class="footer-text">© 2025 DebtorHub. Todos os direitos reservados.</p>
+</div>
+
+<!-- ═══ RIGHT PANEL ═══ -->
+<div class="panel-right">
+  <div class="form-card">
+
+    <!-- ─── LOGIN ─── -->
+    <div class="screen active" id="screen-login">
+      <h1 class="form-heading">Bem-vindo de volta</h1>
+      <p class="form-subtext">Acesse sua conta para continuar</p>
+
+      <div class="alert error" id="login-error">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="login-error-msg">E-mail ou senha incorretos.</span>
+      </div>
+
+      <div class="field">
+        <label for="login-email">E-mail</label>
+        <div class="input-wrap">
+          <input type="email" id="login-email" placeholder="joao@empresa.com" autocomplete="email" />
+          <svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        </div>
+        <span class="field-error" id="login-email-err">Informe um e-mail válido.</span>
+      </div>
+
+      <div class="field">
+        <label for="login-password">Senha</label>
+        <div class="input-wrap">
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+          <svg class="ico" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+          <button class="toggle-pw" type="button" onclick="togglePw('login-password',this)" aria-label="Mostrar senha">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <span class="field-error" id="login-pw-err">Informe a senha.</span>
+      </div>
+
+      <div class="form-options">
+        <label class="check-label">
+          <input type="checkbox" id="remember" /> Lembrar de mim
+        </label>
+        <button class="link-btn" onclick="showScreen('screen-recovery')">Esqueceu a senha?</button>
+      </div>
+
+      <button class="btn-primary" id="btn-login" onclick="handleLogin()">
+        <div class="spinner"></div>
+        <span class="btn-label">Entrar na conta</span>
+        <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+
+      <div class="divider"><span>ou</span></div>
+      <p class="signup-row">Não tem uma conta? <button class="link-btn" onclick="showScreen('screen-register')">Criar conta gratuita</button></p>
+    </div>
+
+    <!-- ─── REGISTER ─── -->
+    <div class="screen" id="screen-register">
+      <button class="back-btn" onclick="showScreen('screen-login')">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Voltar para login
+      </button>
+      <h1 class="form-heading">Criar conta</h1>
+      <p class="form-subtext">Preencha os dados abaixo para começar</p>
+
+      <div class="alert error" id="register-error">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="register-error-msg">Ocorreu um erro. Tente novamente.</span>
+      </div>
+
+      <div class="form-row" style="margin-bottom:16px">
+        <div class="field" style="margin-bottom:0">
+          <label for="reg-first">Nome</label>
+          <div class="input-wrap">
+            <input type="text" id="reg-first" placeholder="João" autocomplete="given-name" />
+            <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.866 3.134-7 7-7s7 3.134 7 7"/></svg>
+          </div>
+          <span class="field-error" id="reg-first-err">Campo obrigatório.</span>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="reg-last">Sobrenome</label>
+          <div class="input-wrap">
+            <input type="text" id="reg-last" placeholder="Silva" autocomplete="family-name" />
+            <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.866 3.134-7 7-7s7 3.134 7 7"/></svg>
+          </div>
+          <span class="field-error" id="reg-last-err">Campo obrigatório.</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="reg-email">E-mail</label>
+        <div class="input-wrap">
+          <input type="email" id="reg-email" placeholder="joao@empresa.com" autocomplete="email" />
+          <svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        </div>
+        <span class="field-error" id="reg-email-err">Informe um e-mail válido.</span>
+      </div>
+
+      <div class="field">
+        <label for="reg-password">Senha</label>
+        <div class="input-wrap">
+          <input type="password" id="reg-password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" oninput="checkStrength(this.value)" />
+          <svg class="ico" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+          <button class="toggle-pw" type="button" onclick="togglePw('reg-password',this)" aria-label="Mostrar senha">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="pw-strength">
+          <div class="pw-bar" id="bar1"></div>
+          <div class="pw-bar" id="bar2"></div>
+          <div class="pw-bar" id="bar3"></div>
+          <div class="pw-bar" id="bar4"></div>
+        </div>
+        <span class="pw-hint" id="pw-hint">Use letras, números e símbolos</span>
+        <span class="field-error" id="reg-pw-err">Mínimo de 8 caracteres.</span>
+      </div>
+
+      <button class="btn-primary" id="btn-register" onclick="handleRegister()">
+        <div class="spinner"></div>
+        <span class="btn-label">Criar conta</span>
+        <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+
+      <div class="divider"><span>ou</span></div>
+      <p class="signup-row">Já tem conta? <button class="link-btn" onclick="showScreen('screen-login')">Entrar</button></p>
+    </div>
+
+    <!-- ─── RECOVERY ─── -->
+    <div class="screen" id="screen-recovery">
+      <button class="back-btn" onclick="showScreen('screen-login')">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Voltar para login
+      </button>
+      <h1 class="form-heading">Recuperar senha</h1>
+      <p class="form-subtext">Enviaremos um link para redefinir sua senha.</p>
+
+      <div class="alert success" id="recovery-success">
+        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+        <span>Link enviado! Verifique sua caixa de entrada e a pasta de spam.</span>
+      </div>
+
+      <div class="alert error" id="recovery-error">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="recovery-error-msg">E-mail não encontrado.</span>
+      </div>
+
+      <div id="recovery-form-wrap">
+        <div class="field">
+          <label for="recovery-email">E-mail cadastrado</label>
+          <div class="input-wrap">
+            <input type="email" id="recovery-email" placeholder="joao@empresa.com" autocomplete="email" />
+            <svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          </div>
+          <span class="field-error" id="recovery-email-err">Informe um e-mail válido.</span>
+        </div>
+
+        <button class="btn-primary" id="btn-recovery" onclick="handleRecovery()">
+          <div class="spinner"></div>
+          <span class="btn-label">Enviar link de recuperação</span>
+          <svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /form-card -->
+</div><!-- /panel-right -->
+</body>
+</html>
