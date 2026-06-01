@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="MyWebSite" />
 <link rel="manifest" href="../src/assets/favicon/site.webmanifest" />
 
-<script src="../src/js/debtor-login.js"></script>
+<script src="../src/js/debtor-login.js" defer></script>
 
 <title>DebtorHub — Acesso</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
@@ -19,17 +19,15 @@
 </head>
 <body>
 
-<!-- ═══ MOBILE BLOCKER ═══ -->
 <div id="screen-block">
   <div class="block-icon">
     <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12" y2="18.5"/></svg>
   </div>
-  <h2>Tela muito pequena</h2>
-  <p>O DebtorHub foi projetado para uso em desktop. Acesse por um computador com resolução mínima de 1024px.</p>
+  <h2>Ecrã muito pequeno</h2>
+  <p>O DebtorHub foi desenhado para uso em desktop. Aceda por um computador com resolução mínima de 1024px.</p>
   <div class="block-badge">Mínimo: 1024px de largura</div>
 </div>
 
-<!-- ═══ LEFT PANEL ═══ -->
 <div class="panel-left">
   <div class="brand">
     <div class="brand-icon">
@@ -43,25 +41,23 @@
 
   <div class="panel-left-content">
     <h2>Gestão de <span>débitos</span> em tempo real.</h2>
-    <p>Monitore cobranças, acompanhe inadimplências e tome decisões baseadas em dados com total segurança.</p>
+    <p>Monitorize cobranças, acompanhe incumprimentos e tome decisões baseadas em dados com total segurança.</p>
     <div class="stats-row">
       <div class="stat-card"><div class="stat-value">100%</div><div class="stat-label">Disponibilidade</div></div>
-      <div class="stat-card"><div class="stat-value">Facilidade</div><div class="stat-label">Para os usuários</div></div>
-      <div class="stat-card"><div class="stat-value">Débitos</div><div class="stat-label">Gerenciados</div></div>
+      <div class="stat-card"><div class="stat-value">Facilidade</div><div class="stat-label">Para os utilizadores</div></div>
+      <div class="stat-card"><div class="stat-value">Débitos</div><div class="stat-label">Geridos</div></div>
     </div>
   </div>
 
-  <p class="footer-text">© 2025 DebtorHub. Todos os direitos reservados.</p>
+  <p class="footer-text">© 2026 DebtorHub. Todos os direitos reservados.</p>
 </div>
 
-<!-- ═══ RIGHT PANEL ═══ -->
 <div class="panel-right">
   <div class="form-card">
 
-    <!-- ─── LOGIN ─── -->
     <div class="screen active" id="screen-login">
       <h1 class="form-heading">Bem-vindo de volta</h1>
-      <p class="form-subtext">Acesse sua conta para continuar</p>
+      <p class="form-subtext">Aceda à sua conta para continuar</p>
 
       <div class="alert error" id="login-error">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -91,7 +87,7 @@
 
       <div class="form-options">
         <label class="check-label">
-          <input type="checkbox" id="remember" /> Lembrar de mim
+          <input type="checkbox" id="remember" /> Lembrar-me
         </label>
         <button class="link-btn" onclick="showScreen('screen-recovery')">Esqueceu a senha?</button>
       </div>
@@ -106,7 +102,6 @@
       <p class="signup-row">Não tem uma conta? <button class="link-btn" onclick="showScreen('screen-register')">Criar conta gratuita</button></p>
     </div>
 
-    <!-- ─── REGISTER ─── -->
     <div class="screen" id="screen-register">
       <button class="back-btn" onclick="showScreen('screen-login')">
         <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
@@ -177,18 +172,17 @@
       <p class="signup-row">Já tem conta? <button class="link-btn" onclick="showScreen('screen-login')">Entrar</button></p>
     </div>
 
-    <!-- ─── RECOVERY ─── -->
     <div class="screen" id="screen-recovery">
       <button class="back-btn" onclick="showScreen('screen-login')">
         <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
         Voltar para login
       </button>
       <h1 class="form-heading">Recuperar senha</h1>
-      <p class="form-subtext">Enviaremos um link para redefinir sua senha.</p>
+      <p class="form-subtext">Enviaremos um link para redefinir a sua senha.</p>
 
       <div class="alert success" id="recovery-success">
         <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
-        <span>Link enviado! Verifique sua caixa de entrada e a pasta de spam.</span>
+        <span>Link enviado! Verifique a sua caixa de entrada.</span>
       </div>
 
       <div class="alert error" id="recovery-error">
@@ -198,7 +192,7 @@
 
       <div id="recovery-form-wrap">
         <div class="field">
-          <label for="recovery-email">E-mail cadastrado</label>
+          <label for="recovery-email">E-mail registado</label>
           <div class="input-wrap">
             <input type="email" id="recovery-email" placeholder="joao@empresa.com" autocomplete="email" />
             <svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
@@ -214,7 +208,5 @@
       </div>
     </div>
 
-  </div><!-- /form-card -->
-</div><!-- /panel-right -->
-</body>
+  </div></div></body>
 </html>

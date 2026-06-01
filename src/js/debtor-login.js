@@ -1,13 +1,9 @@
-/* ══════════════════════════════════════════
-   API CONFIG — Apontando para a Render
-   ══════════════════════════════════════════ */
 const API = {
   base:     'https://debtor-api-81qs.onrender.com', 
-  users:    '/users', // GET para listar e validar login
-  register: '/save',  // POST para criar conta
+  users:    '/users', 
+  register: '/save',  
 };
 
-/* ── Helpers de UI (Mantidos do seu código original) ── */
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -65,11 +61,6 @@ function checkStrength(pw) {
   document.getElementById('pw-hint').style.color = pw.length === 0 ? 'var(--ink-ghost)' : colors[score];
 }
 
-/* ══════════════════════════════════════════
-   INTEGRAÇÃO COM A API JAVA
-   ══════════════════════════════════════════ */
-
-/* ── REGISTER (Criar Conta via /save) ── */
 async function handleRegister() {
   showAlert('register-error', false);
   clearErrors('reg-first-err', 'reg-last-err', 'reg-email-err', 'reg-pw-err');
@@ -96,15 +87,9 @@ async function handleRegister() {
       body: JSON.stringify({ firstName, lastName, email, password })
     });
 
-    // Como o Java retorna "Saved ...", nós lemos como texto puro
     const responseText = await res.text();
 
     if (res.ok && responseText.includes("Saved")) {
-      // Conta criada com sucesso! Guarda o usuário no navegador para simular login
-      localStorage.setItem('dh_user_email', email);
-      localStorage.setItem('dh_user_name', firstName);
-      
-      // Limpa os campos e vai para a tela de login (ou dashboard)
       document.getElementById('reg-first').value = '';
       document.getElementById('reg-last').value = '';
       document.getElementById('reg-email').value = '';
@@ -117,7 +102,7 @@ async function handleRegister() {
     }
 
   } catch (err) {
-    document.getElementById('register-error-msg').textContent = 'Erro ao conectar com a API. Verifique o CORS ou a internet.';
+    document.getElementById('register-error-msg').textContent = 'Erro ao conectar com a API. Verifique a internet.';
     showAlert('register-error', true);
     console.error('[register]', err);
   } finally {
@@ -125,7 +110,6 @@ async function handleRegister() {
   }
 }
 
-/* ── LOGIN (Simulado via GET /users) ── */
 async function handleLogin() {
   showAlert('login-error', false);
   clearErrors('login-email-err', 'login-pw-err');
@@ -149,32 +133,27 @@ async function handleLogin() {
   setLoading('btn-login', true);
 
   try {
-    // Busca a lista de todos os usuários cadastrados
     const res = await fetch(API.base + API.users);
     
     if (!res.ok) throw new Error("Erro ao buscar usuários");
     
-    // Como a rota /users retorna uma lista em JSON, lemos como json
     const users = await res.json(); 
-
-    // Procura na lista se existe alguém com esse e-mail e senha
     const userFound = users.find(u => u.email === email && u.password === password);
 
     if (userFound) {
-      // Sucesso! Usuário encontrado
+      localStorage.setItem('dh_user_id', userFound.id);
       localStorage.setItem('dh_user_email', userFound.email);
       localStorage.setItem('dh_user_name', userFound.firstName);
       
-      // Redireciona para o painel principal (ajuste este link para a sua página real)
-      window.location.href = '/dashboard.html'; 
+      // Caminho relativo para não causar erro 404
+      window.location.href = 'dashboard.html'; 
     } else {
-      // Usuário não encontrado ou senha errada
       document.getElementById('login-error-msg').textContent = 'E-mail ou senha incorretos.';
       showAlert('login-error', true);
     }
 
   } catch (err) {
-    document.getElementById('login-error-msg').textContent = 'Sem conexão com o servidor. Verifique o CORS ou sua internet.';
+    document.getElementById('login-error-msg').textContent = 'Sem conexão com o servidor.';
     showAlert('login-error', true);
     console.error('[login]', err);
   } finally {
@@ -182,7 +161,6 @@ async function handleLogin() {
   }
 }
 
-/* ── RECOVERY (Mock - já que não há envio de e-mail no backend ainda) ── */
 function handleRecovery() {
   showAlert('recovery-success', false);
   showAlert('recovery-error', false);
@@ -198,7 +176,6 @@ function handleRecovery() {
 
   setLoading('btn-recovery', true);
   
-  // Simula o tempo de envio
   setTimeout(() => {
     document.getElementById('recovery-form-wrap').style.display = 'none';
     showAlert('recovery-success', true);
@@ -206,7 +183,6 @@ function handleRecovery() {
   }, 1500);
 }
 
-/* ── Eventos de Tela ── */
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   const active = document.querySelector('.screen.active').id;

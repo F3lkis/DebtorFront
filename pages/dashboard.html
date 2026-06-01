@@ -3,19 +3,15 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-<link rel="icon" type="image/png" href="../src/assets/favicon/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="../src/assets/favicon/favicon.svg" />
-<link rel="shortcut icon" href="../src/assets/favicon/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="../src/assets/favicon/apple-touch-icon.png" />
-<meta name="apple-mobile-web-app-title" content="MyWebSite" />
-<link rel="manifest" href="../src/assets/favicon/site.webmanifest" />
-
 <title>FinDash — Controle de Gastos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<link rel="stylesheet" href="../src/css/debtor-dashboard.css"/>
+
+<script src="../src/js/debtor-main.js" defer></script>
+
+<link rel="stylesheet" href="../src/css/debtor-main.css"/>
+
 </head>
 <body>
 
@@ -24,97 +20,105 @@
   <button class="nav-btn active" title="Dashboard">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
   </button>
-  <div class="sidebar-bottom">
-    <div class="avatar">JD</div>
-  </div>
+  <button class="nav-btn" title="Relatórios">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+  </button>
+  <button class="nav-btn" title="Transferências">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+  </button>
+  <div class="sidebar-sep"></div>
+  <button class="nav-btn" title="Configurações">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+  <div class="sidebar-bottom"><div class="avatar" id="user-avatar">JD</div></div>
 </nav>
 
-<!-- MAIN -->
 <div class="main">
   <header class="topbar">
-    <div class="topbar-title">Debtor <span>Dashboard</span></div>
+    <div class="topbar-title">Fin<span>Dash</span> <span style="font-weight:300;color:var(--text-md);font-size:13px">pessoal</span></div>
     <div class="topbar-right">
       <span class="badge-date" id="current-date"></span>
+      <div class="api-status wait" id="api-status">
+        <span class="api-dot"></span><span id="api-status-txt">Conectando…</span>
+      </div>
       <button class="topbar-btn" onclick="scrollToForm()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Novo Gasto
+      </button>
+      <button class="topbar-btn" style="background:transparent; color:#F96060; border-color:#F96060;" onclick="logout()">
+        Sair
       </button>
     </div>
   </header>
 
   <div class="content">
+    <div id="error-banner"></div>
 
-    <!-- STAT CARDS -->
     <div class="stats-row">
       <div class="stat-card c-gold">
         <div class="stat-label">Total Gastos</div>
-        <div class="stat-value" id="stat-total">R$ 0</div>
-        <div class="stat-sub" id="stat-total-sub"><b>—</b> este mês</div>
-        <div class="stat-icon c-gold">
-          <svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        </div>
+        <div class="stat-value" id="stat-total"><span class="skeleton skel-val"></span></div>
+        <div class="stat-sub" id="stat-total-sub">&nbsp;</div>
+        <div class="stat-icon c-gold"><svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
       </div>
       <div class="stat-card c-violet">
-        <div class="stat-label">Departamentos</div>
-        <div class="stat-value" id="stat-depts">4</div>
-        <div class="stat-sub">centros de custo ativos</div>
-        <div class="stat-icon c-violet">
-          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
+        <div class="stat-label">Categorias</div>
+        <div class="stat-value" id="stat-depts"><span class="skeleton skel-val" style="width:40%"></span></div>
+        <div class="stat-sub">categorias com gastos</div>
+        <div class="stat-icon c-violet"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
       </div>
       <div class="stat-card c-mint">
         <div class="stat-label">Lançamentos</div>
-        <div class="stat-value" id="stat-count">0</div>
+        <div class="stat-value" id="stat-count"><span class="skeleton skel-val" style="width:35%"></span></div>
         <div class="stat-sub">registros no período</div>
-        <div class="stat-icon c-mint">
-          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        </div>
+        <div class="stat-icon c-mint"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
       </div>
       <div class="stat-card c-red">
         <div class="stat-label">Maior Gasto</div>
-        <div class="stat-value" id="stat-max">R$ 0</div>
-        <div class="stat-sub" id="stat-max-dept">—</div>
-        <div class="stat-icon c-red">
-          <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        </div>
+        <div class="stat-value" id="stat-max"><span class="skeleton skel-val"></span></div>
+        <div class="stat-sub" id="stat-max-dept">&nbsp;</div>
+        <div class="stat-icon c-red"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
       </div>
     </div>
 
-    <!-- MID ROW -->
     <div class="mid-row">
-      <!-- DONUT CHART -->
       <div class="panel">
         <div class="panel-header">
-          <span class="panel-title">Divisão por Departamento</span>
+          <span class="panel-title">Divisão por Categoria</span>
           <span class="panel-tag">Período atual</span>
         </div>
         <div class="panel-body">
           <div class="chart-wrap">
             <canvas id="donutChart" role="img" aria-label="Gráfico de rosca mostrando divisão de gastos por departamento">Distribuição de gastos por departamento.</canvas>
             <div class="donut-center">
-              <div class="donut-center-val" id="donut-total">R$ 0</div>
+              <div class="donut-center-val" id="donut-total">—</div>
               <div class="donut-center-lbl">total</div>
             </div>
           </div>
-          <div class="legend" id="legend"></div>
+          <div class="legend" id="legend"><div class="skeleton skel-line"></div><div class="skeleton skel-line"></div><div class="skeleton skel-line" style="width:70%"></div></div>
         </div>
       </div>
 
-      <!-- RECENT EXPENSES -->
       <div class="panel">
         <div class="panel-header">
           <span class="panel-title">Últimos Gastos Adicionados</span>
-          <span class="panel-tag" id="recent-count-badge">0 registros</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn-clear-exp" id="btn-clear-exp" onclick="handleDeleteExpired()" title="Remover todos os vencidos">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Limpar vencidos
+            </button>
+            <span class="panel-tag" id="recent-count-badge">carregando…</span>
+          </div>
         </div>
         <div class="expenses-list" id="expense-list">
-          <div class="empty">Nenhum gasto registrado ainda.<br>Adicione um abaixo ↓</div>
+          <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+            <div class="skeleton skel-line"></div><div class="skeleton skel-line"></div><div class="skeleton skel-line" style="width:80%"></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- BOTTOM ROW -->
     <div class="bot-row">
-      <!-- ADD FORM -->
       <div class="panel" id="form-section">
         <div class="panel-header">
           <span class="panel-title">Adicionar Novo Gasto</span>
@@ -130,285 +134,69 @@
               <input type="number" class="form-input" id="f-valor" placeholder="0,00" min="0" step="0.01"/>
             </div>
             <div class="form-group">
-              <label class="form-label">Departamento</label>
+              <label class="form-label">Categoria</label>
               <select class="form-select" id="f-dept">
-                <option value="">Selecionar...</option>
-                <option value="Vendas">Vendas</option>
-                <option value="Financas">Finanças</option>
-                <option value="Marketing">Marketing</option>
-                <option value="RH">RH</option>
-                <option value="TI">TI</option>
-                <option value="Operacoes">Operações</option>
+                <option value="">Selecionar…</option>
+                <option value="Casa">🏠 Casa</option>
+                <option value="Alimentacao">🍔 Alimentação</option>
+                <option value="Transporte">🚗 Transporte</option>
+                <option value="Lazer">🎮 Lazer</option>
+                <option value="Saude">💊 Saúde</option>
+                <option value="Educacao">📚 Educação</option>
+                <option value="Vestuario">👗 Vestuário</option>
+                <option value="GastosAdversos">⚠️ Gastos Adversos</option>
+                <option value="Outros">📁 Outros</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">Data</label>
+              <label class="form-label">Data de Criação</label>
               <input type="date" class="form-input" id="f-data"/>
             </div>
             <div class="form-group full">
-              <label class="form-label">Categoria</label>
+              <label class="form-label">Subcategoria</label>
               <select class="form-select" id="f-cat">
-                <option value="">Selecionar...</option>
-                <option value="Infraestrutura">Infraestrutura</option>
-                <option value="Software">Software / Licença</option>
-                <option value="Pessoal">Pessoal</option>
-                <option value="Marketing">Marketing / Publicidade</option>
-                <option value="Viagem">Viagem</option>
-                <option value="Fornecedor">Fornecedor</option>
+                <option value="">Selecionar…</option>
+                <option value="Aluguel">Aluguel / Financiamento</option>
+                <option value="Contas">Contas e Utilidades</option>
+                <option value="Mercado">Mercado / Supermercado</option>
+                <option value="Restaurante">Restaurante / Delivery</option>
+                <option value="Combustivel">Combustível</option>
+                <option value="UberTaxi">Uber / Táxi / Ônibus</option>
+                <option value="Streaming">Streaming / Assinatura</option>
+                <option value="Viagem">Viagem / Passeio</option>
+                <option value="Consulta">Consulta / Exame</option>
+                <option value="Farmacia">Farmácia</option>
+                <option value="Curso">Curso / Livro</option>
+                <option value="Roupa">Roupa / Calçado</option>
+                <option value="Inesperado">Gasto Inesperado</option>
                 <option value="Outros">Outros</option>
               </select>
             </div>
             <div class="form-group full">
-              <button class="btn-submit" onclick="addExpense()">Registrar Gasto</button>
+              <button class="btn-submit" id="btn-submit" onclick="handleSubmit()">Registrar Gasto</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- DEPT RANKING -->
       <div class="panel">
         <div class="panel-header">
-          <span class="panel-title">Ranking de Departamentos</span>
+          <span class="panel-title">Ranking de Categorias</span>
           <span class="panel-tag">por volume</span>
         </div>
         <div class="dept-list" id="dept-ranking">
-          <div class="empty">Sem dados disponíveis.</div>
+          <div class="skeleton skel-line"></div><div class="skeleton skel-line"></div><div class="skeleton skel-line" style="width:65%"></div>
         </div>
       </div>
     </div>
-
-  </div><!-- /content -->
-</div><!-- /main -->
+  </div>
+</div>
 
 <div class="toast" id="toast">
   <span class="toast-dot"></span>
-  <span id="toast-msg">Gasto adicionado com sucesso!</span>
+  <span id="toast-msg">OK</span>
 </div>
 
-<script>
-// ── CONFIGURAÇÃO DA API (Spring Boot) ──────────────────────────────────────────
-// Substitua pela URL real quando o backend estiver pronto:
-// const API_BASE = 'http://localhost:8080/api';
-// async function fetchGastos() { return await fetch(API_BASE + '/gastos').then(r => r.json()); }
-// async function postGasto(payload) { return await fetch(API_BASE + '/gastos', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }).then(r => r.json()); }
-// ─────────────────────────────────────────────────────────────────────────────
 
-// Mock data inicial
-let expenses = [
-  { id:1, descricao:'Campanha Google Ads', valor:4800, departamento:'Marketing', categoria:'Marketing', data:'2025-05-08' },
-  { id:2, descricao:'Salários — equipe comercial', valor:18500, departamento:'Vendas', categoria:'Pessoal', data:'2025-05-05' },
-  { id:3, descricao:'Licença Salesforce CRM', valor:3200, departamento:'Vendas', categoria:'Software', data:'2025-05-03' },
-  { id:4, descricao:'Aluguel escritório sede', valor:8700, departamento:'Financas', categoria:'Infraestrutura', data:'2025-05-01' },
-  { id:5, descricao:'Recrutamento — 2 vagas', valor:2100, departamento:'RH', categoria:'Pessoal', data:'2025-04-30' },
-];
-
-const COLORS = {
-  Vendas:    '#7B6EF6',
-  Financas:  '#F5A623',
-  Marketing: '#1ED8A0',
-  RH:        '#F96060',
-  TI:        '#60C3F9',
-  Operacoes: '#C9A4FF',
-};
-const DEFAULT_COLOR = '#8A90AB';
-
-const DEPT_ICONS = {
-  Vendas:    '💼', Financas: '📊', Marketing: '📣',
-  RH:        '👥', TI:       '💻', Operacoes: '⚙️',
-};
-
-let donutChart = null;
-
-function deptColor(d) { return COLORS[d] || DEFAULT_COLOR; }
-
-function fmtBRL(v) {
-  return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-}
-
-function fmtDate(d) {
-  if (!d) return '—';
-  const [y,m,dd] = d.split('-');
-  return `${dd}/${m}/${y}`;
-}
-
-function setDate() {
-  const now = new Date();
-  document.getElementById('current-date').textContent =
-    now.toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
-  document.getElementById('f-data').value = now.toISOString().split('T')[0];
-}
-
-function updateStats() {
-  const total = expenses.reduce((s,e) => s + Number(e.valor), 0);
-  const maxE = expenses.reduce((a,b) => Number(a.valor) > Number(b.valor) ? a : b, expenses[0]);
-  document.getElementById('stat-total').textContent = fmtBRL(total);
-  document.getElementById('stat-count').textContent = expenses.length;
-  document.getElementById('stat-total-sub').innerHTML = `<b>${expenses.length} lançamentos</b> este mês`;
-  if (maxE) {
-    document.getElementById('stat-max').textContent = fmtBRL(maxE.valor);
-    document.getElementById('stat-max-dept').textContent = maxE.departamento;
-  }
-  document.getElementById('donut-total').textContent = fmtBRL(total);
-}
-
-function getDeptTotals() {
-  const map = {};
-  expenses.forEach(e => {
-    map[e.departamento] = (map[e.departamento] || 0) + Number(e.valor);
-  });
-  return map;
-}
-
-function updateChart() {
-  const map = getDeptTotals();
-  const labels = Object.keys(map);
-  const data   = Object.values(map);
-  const colors = labels.map(deptColor);
-
-  if (donutChart) {
-    donutChart.data.labels = labels;
-    donutChart.data.datasets[0].data = data;
-    donutChart.data.datasets[0].backgroundColor = colors;
-    donutChart.update();
-  } else {
-    donutChart = new Chart(document.getElementById('donutChart'), {
-      type: 'doughnut',
-      data: {
-        labels,
-        datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#13161F', hoverBorderColor: '#13161F' }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false, cutout: '68%',
-        plugins: { legend: { display: false }, tooltip: {
-          callbacks: { label: ctx => ` ${ctx.label}: ${fmtBRL(ctx.raw)}` }
-        }}
-      }
-    });
-  }
-
-  const total = data.reduce((a,b) => a+b, 0);
-  const legend = document.getElementById('legend');
-  legend.innerHTML = labels.map((l,i) => {
-    const pct = total ? Math.round(data[i]/total*100) : 0;
-    const c = colors[i];
-    return `<div class="legend-item">
-      <div class="legend-left">
-        <span class="legend-dot" style="background:${c}"></span>
-        <span class="legend-name">${l}</span>
-      </div>
-      <div class="legend-right">
-        <div class="legend-bar-wrap"><div class="legend-bar" style="width:${pct}%;background:${c}"></div></div>
-        <span class="legend-pct">${pct}%</span>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function updateList() {
-  const el = document.getElementById('expense-list');
-  const badge = document.getElementById('recent-count-badge');
-  badge.textContent = `${expenses.length} registros`;
-  if (!expenses.length) {
-    el.innerHTML = '<div class="empty">Nenhum gasto registrado ainda.<br>Adicione um abaixo ↓</div>';
-    return;
-  }
-  const sorted = [...expenses].sort((a,b) => b.id - a.id).slice(0, 8);
-  el.innerHTML = sorted.map(e => {
-    const c = deptColor(e.departamento);
-    const icon = DEPT_ICONS[e.departamento] || '📁';
-    return `<div class="expense-item">
-      <div class="exp-icon" style="background:${c}22">${icon}</div>
-      <div class="exp-info">
-        <div class="exp-name">${e.descricao}</div>
-        <div class="exp-meta">${e.categoria || '—'}<span class="exp-dept" style="background:${c}22;color:${c}">${e.departamento}</span></div>
-      </div>
-      <div>
-        <div class="exp-amount" style="color:${c}">${fmtBRL(e.valor)}</div>
-        <div class="exp-date">${fmtDate(e.data)}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function updateRanking() {
-  const map = getDeptTotals();
-  const ranked = Object.entries(map).sort((a,b) => b[1]-a[1]);
-  const max = ranked[0] ? ranked[0][1] : 1;
-  const el = document.getElementById('dept-ranking');
-  if (!ranked.length) { el.innerHTML = '<div class="empty">Sem dados disponíveis.</div>'; return; }
-  el.innerHTML = ranked.map(([dept, val]) => {
-    const pct = Math.round(val/max*100);
-    const c = deptColor(dept);
-    return `<div class="dept-item">
-      <div class="dept-row">
-        <span class="dept-name">${DEPT_ICONS[dept]||'📁'} ${dept}</span>
-        <span class="dept-val">${fmtBRL(val)}</span>
-      </div>
-      <div class="dept-track"><div class="dept-fill" style="width:${pct}%;background:${c}"></div></div>
-    </div>`;
-  }).join('');
-}
-
-function render() {
-  updateStats();
-  updateChart();
-  updateList();
-  updateRanking();
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  document.getElementById('toast-msg').textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-function addExpense() {
-  const desc  = document.getElementById('f-desc').value.trim();
-  const valor = parseFloat(document.getElementById('f-valor').value);
-  const dept  = document.getElementById('f-dept').value;
-  const cat   = document.getElementById('f-cat').value;
-  const data  = document.getElementById('f-data').value;
-
-  if (!desc || isNaN(valor) || valor <= 0 || !dept) {
-    showToast('⚠️ Preencha descrição, valor e departamento.');
-    return;
-  }
-
-  const payload = { descricao: desc, valor, departamento: dept, categoria: cat, data };
-
-  // ── Integração Spring Boot ─────────────────────────────────────────────────
-  // Descomente para conectar ao backend:
-  // fetch(API_BASE + '/gastos', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(payload)
-  // })
-  // .then(r => r.json())
-  // .then(saved => { expenses.push(saved); render(); showToast('Gasto registrado!'); })
-  // .catch(() => showToast('Erro ao conectar com o servidor.'));
-  // ─────────────────────────────────────────────────────────────────────────
-
-  // Mock (remover quando conectar ao backend):
-  payload.id = Date.now();
-  expenses.push(payload);
-  render();
-  showToast('Gasto registrado com sucesso!');
-
-  // Reset form
-  document.getElementById('f-desc').value = '';
-  document.getElementById('f-valor').value = '';
-  document.getElementById('f-dept').value = '';
-  document.getElementById('f-cat').value = '';
-}
-
-function scrollToForm() {
-  document.getElementById('form-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  setTimeout(() => document.getElementById('f-desc').focus(), 400);
-}
-
-setDate();
-render();
-</script>
 </body>
 </html>
