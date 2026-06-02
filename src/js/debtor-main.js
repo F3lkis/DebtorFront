@@ -6,7 +6,7 @@ const USER_ID = localStorage.getItem('dh_user_id');
 
 if (!USER_ID) {
   alert("Sessão expirada. Por favor, faça login novamente.");
-  window.location.href = "debtor-login.html"; // Ajuste se o nome do seu arquivo de login for diferente
+  window.location.href = "index.html"; // Ajuste se o nome do seu arquivo de login for diferente
 }
 
 const userName = localStorage.getItem('dh_user_name') || "User";
@@ -14,7 +14,7 @@ document.getElementById('user-avatar').textContent = userName.charAt(0).toUpperC
 
 function logout() {
   localStorage.clear(); // Limpa tudo
-  window.location.href = "debtor-login.html";
+  window.location.href = "index.html";
 }
 
 // ══════════════════════════════════════════════════════
