@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: debtorfront
+    env: static
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /
+        destination: /pages/index.html
+      - type: rewrite
+        source: /dashboard
+        destination: /pages/dashboard.html
